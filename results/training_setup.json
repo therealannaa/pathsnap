@@ -1,0 +1,33 @@
+{
+  "point_stride": 3,
+  "folds": 5,
+  "cv": "GroupKFold by trip_id",
+  "seed": 42,
+  "train_rows": 876362,
+  "train_trips": 80,
+  "features": [
+    "dist",
+    "dist_rank",
+    "dist_minus_min",
+    "dist_ratio",
+    "win2_mean_dist",
+    "win2_max_dist",
+    "win5_mean_dist",
+    "head_cos",
+    "head_cos_wide",
+    "head_abs_deg",
+    "heading_valid",
+    "speed",
+    "dt",
+    "gap",
+    "proj_t",
+    "arc_len",
+    "to_out_deg",
+    "from_in_deg",
+    "n_cand_25m",
+    "prev_near_conn",
+    "next_near_conn",
+    "is_cand_prev",
+    "is_cand_next"
+  ]
+}

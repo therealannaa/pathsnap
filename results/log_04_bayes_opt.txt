@@ -1,0 +1,6 @@
+search rows 438558
+best {'n_estimators': 500, 'learning_rate': 0.04228702129247791, 'num_leaves': 31, 'min_child_samples': 144, 'subsample': 0.8854538377676275, 'colsample_bytree': 0.6080245855253933, 'reg_lambda': 0.004103707345987048, 'reg_alpha': 0.001036350998214195} 0.886568367276385
+              model  cv_macro_f1  cv_top1  test_top1  test_macro_f1  test_log_loss  inference_ms_per_1k_rows  fit_time_s
+0  LightGBM untuned       0.9372   0.8846     0.8856         0.9333         0.0441                    3.6212      7.9524
+1    LightGBM tuned       0.9374   0.8852     0.8843         0.9334         0.0439                    5.9155     12.5940
+search 643s

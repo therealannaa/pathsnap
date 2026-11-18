@@ -1,0 +1,42 @@
+{
+  "algorithm": "LightGBM LGBMClassifier",
+  "params": {
+    "n_estimators": 500,
+    "learning_rate": 0.04228702129247791,
+    "num_leaves": 31,
+    "min_child_samples": 144,
+    "subsample": 0.8854538377676275,
+    "colsample_bytree": 0.6080245855253933,
+    "reg_lambda": 0.004103707345987048,
+    "reg_alpha": 0.001036350998214195
+  },
+  "features": [
+    "dist",
+    "dist_rank",
+    "dist_minus_min",
+    "dist_ratio",
+    "win2_mean_dist",
+    "win2_max_dist",
+    "win5_mean_dist",
+    "head_cos",
+    "head_cos_wide",
+    "head_abs_deg",
+    "heading_valid",
+    "speed",
+    "dt",
+    "gap",
+    "proj_t",
+    "arc_len",
+    "to_out_deg",
+    "from_in_deg",
+    "n_cand_25m",
+    "prev_near_conn",
+    "next_near_conn",
+    "is_cand_prev",
+    "is_cand_next"
+  ],
+  "trained_on": "80 training trips, points with label distance <= 60 m, every 3rd GPS point",
+  "bayes_trials": 40,
+  "search_time_s": 643.2,
+  "seed": 42
+}
