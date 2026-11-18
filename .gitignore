@@ -4,3 +4,4 @@ results/features/*.parquet
 .venv/
 .ipynb_checkpoints/
 docs/
+results/features/train_features.csv

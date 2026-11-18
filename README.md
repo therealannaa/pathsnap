@@ -65,6 +65,7 @@ python scripts/05_hmm.py             # HMM decoder tuning, classifier-only vs HM
 python scripts/06_extra_plots.py     # MLP and LightGBM training histories, CV box plots
 python scripts/07_detail_maps.py     # zoomed Folium maps for the report
 python scripts/08_error_analysis.py  # breakdown of the remaining HMM errors
+python scripts/09_evaluator_results.py  # scores the evaluator trips once through the API (no tuning)
 python report/build_report.py        # report HTML + PDF from results/
 ```
 

@@ -27,7 +27,8 @@ and scores the result against reference data that stays on the server.</p>
 <p>Final system on the 10 student-test trips: the tuned LightGBM classifier on its own selects the correct arc for
 88.4% of GPS points; after HMM decoding this rises to 92.6%. Route continuity goes from
 95.4% to 98.3% and the length-weighted route F1 from 85.5% to 98.9%.
-The simplest baseline, taking the geometrically nearest arc, is correct for 51.8% of points.</p>
+The simplest baseline, taking the geometrically nearest arc, is correct for 51.8% of points.
+On the 10 evaluator-test trips, scored once through the API after all choices were frozen (Section 8), the full system reaches a similar level.</p>
 <table><thead><tr><th>Member</th><th>Responsibility</th><th>Main files</th></tr></thead><tbody>
 <tr><td>Anna</td><td>HMM and Viterbi decoding, route reconstruction, continuity and route metrics, decoder tuning, end-to-end pipeline, FastAPI backend and two-laptop deployment</td><td><code>hmm.py, metrics.py, pipeline.py, scripts/05_hmm.py, api/</code></td></tr><tr><td>Annanya</td><td>Feature engineering, training and comparison of the nine models, grouped cross-validation, model selection, Bayesian hyperparameter optimisation, comparison plots</td><td><code>features.py, models.py, datasets.py, scripts/03, 04, 06</code></td></tr><tr><td>Bhoomika</td><td>Data loading and cleaning, local projection, reference-route alignment (labels), exploratory data analysis, Folium maps</td><td><code>data_io.py, geo.py, labeling.py, maps.py, scripts/01_eda.py, scripts/07_detail_maps.py</code></td></tr><tr><td>Bhuvan</td><td>Road-network cropping, KD-tree candidate generation, candidate miss-rate analysis, dataset build, evaluator UI</td><td><code>network.py, scripts/02_build_dataset.py, ui/</code></td></tr>
 </tbody></table>
@@ -450,7 +451,30 @@ INFO:     127.0.0.1:50060 - "POST /predict HTTP/1.1" 200 OK
 </pre>
 <p class="cap">Listing 7.1: API console log for the request in Figure 7.1.</p>
 
-<h2>8. Conclusions and limitations</h2>
+<h2>8. Results on the evaluator-test trips</h2>
+<p>These numbers were computed <b>once, through the API, after every modelling choice was frozen</b>: model, features,
+hyperparameters and decoder settings are the ones described above, and the code on GitHub was committed before the
+evaluator data was received. No result in this section was used to select or tune anything. <code>scripts/09_evaluator_results.py</code>
+calls the same <code>/trips</code> and <code>/predict</code> endpoints as the evaluator UI and writes
+<code>results/evaluator_test_results.csv</code>.</p>
+<table><thead><tr><th>Trip</th><th>Points</th><th>Top-1 classifier</th><th>Top-1 HMM</th><th>Continuity HMM</th><th>Route precision</th><th>Route recall</th><th>Route F1</th><th>Breaks</th></tr></thead><tbody><tr><td>00000015</td><td>6854</td><td>0.8287</td><td>0.9190</td><td>0.9978</td><td>0.8563</td><td>0.9911</td><td>0.9188</td><td>0</td></tr><tr><td>00000017</td><td>1346</td><td>0.8834</td><td>0.9042</td><td>0.8892</td><td>0.9892</td><td>1.0000</td><td>0.9946</td><td>0</td></tr><tr><td>00000023</td><td>458</td><td>0.9345</td><td>0.9607</td><td>0.9912</td><td>0.9950</td><td>1.0000</td><td>0.9975</td><td>0</td></tr><tr><td>00000030</td><td>654</td><td>0.7844</td><td>0.8318</td><td>0.9142</td><td>0.9623</td><td>0.9895</td><td>0.9757</td><td>0</td></tr><tr><td>00000049</td><td>2642</td><td>0.9902</td><td>0.9921</td><td>0.9947</td><td>1.0000</td><td>0.9988</td><td>0.9994</td><td>0</td></tr><tr><td>00000059</td><td>1031</td><td>0.9176</td><td>0.9302</td><td>0.9350</td><td>0.9952</td><td>1.0000</td><td>0.9976</td><td>0</td></tr><tr><td>00000067</td><td>916</td><td>0.9629</td><td>0.9640</td><td>0.9913</td><td>0.9628</td><td>0.9949</td><td>0.9786</td><td>0</td></tr><tr><td>00000073</td><td>1144</td><td>0.9738</td><td>0.9781</td><td>0.9921</td><td>0.9966</td><td>1.0000</td><td>0.9983</td><td>0</td></tr><tr><td>00000087</td><td>1399</td><td>0.9442</td><td>0.9814</td><td>0.9878</td><td>1.0000</td><td>0.9954</td><td>0.9977</td><td>0</td></tr><tr><td>00000094</td><td>3230</td><td>0.9285</td><td>0.9390</td><td>0.9796</td><td>0.9835</td><td>1.0000</td><td>0.9917</td><td>0</td></tr></tbody></table>
+<p class="cap">Table 8.1: Evaluator-test trips (results/evaluator_test_results.csv).</p>
+<table><thead><tr><th></th><th>Student test (10 trips)</th><th>Evaluator test (10 trips)</th></tr></thead><tbody>
+<tr><td>Top-1, classifier only</td><td>88.4%</td><td>89.9%</td></tr>
+<tr><td>Top-1, classifier + HMM</td><td>92.6%</td><td>94.0%</td></tr>
+<tr><td>Route continuity</td><td>98.3%</td><td>97.9%</td></tr>
+<tr><td>Route F1 (mean over trips)</td><td>98.9%</td><td>98.5%</td></tr>
+</tbody></table>
+<p class="cap">Table 8.2: Student test against evaluator test (point-weighted Top-1 and continuity).</p>
+<p>The evaluator results are in line with the student-test results: point accuracy 94.0% against 92.6%,
+route F1 98.5% against 98.9%. The HMM improved every evaluator trip, by
+0.1 to 9.0 percentage points, and there were no
+decoder breaks. The weakest trips are 00000030 (Top-1 0.8318) and 00000015, whose route
+recall is 0.9911 but route precision only
+0.8563: the reconstructed route covers the reference almost completely but
+includes some extra road. We did not analyse these trips further, because doing so would amount to developing on the evaluator data.</p>
+
+<h2>9. Conclusions and limitations</h2>
 <ul>
 <li>Relative-distance and heading features turn a 52% nearest-arc baseline into 88% point accuracy with LightGBM. The HMM, which adds road
 connectivity and travel-distance consistency, brings it to 92.6% and makes the route almost fully connected (route F1 98.9%).</li>

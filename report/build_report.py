@@ -121,7 +121,8 @@ and scores the result against reference data that stays on the server.</p>
 <p>Final system on the 10 student-test trips: the tuned LightGBM classifier on its own selects the correct arc for
 {pct(hb.clf_top1)} of GPS points; after HMM decoding this rises to {pct(hb.hmm_top1)}. Route continuity goes from
 {pct(hb.clf_continuity)} to {pct(hb.hmm_continuity)} and the length-weighted route F1 from {pct(hb.clf_route_f1)} to {pct(hb.hmm_route_f1)}.
-The simplest baseline, taking the geometrically nearest arc, is correct for {pct(sp.nearest_correct.mean())} of points.</p>
+The simplest baseline, taking the geometrically nearest arc, is correct for {pct(sp.nearest_correct.mean())} of points.
+{'' if not (RES / 'evaluator_test_results.csv').exists() else 'On the 10 evaluator-test trips, scored once through the API after all choices were frozen (Section 8), the full system reaches a similar level.'}</p>
 <table><thead><tr><th>Member</th><th>Responsibility</th><th>Main files</th></tr></thead><tbody>
 {''.join(f'<tr><td>{n}</td><td>{r}</td><td><code>{f}</code></td></tr>' for n, r, f in TEAM)}
 </tbody></table>
@@ -535,8 +536,41 @@ alignment, which is only needed for evaluation).</p>
 <p class="cap">Listing 7.1: API console log for the request in Figure 7.1.</p>
 """)
 
+    ev_path = RES / "evaluator_test_results.csv"
+    if ev_path.exists():
+        ev = pd.read_csv(ev_path, dtype={"trip_id": str})
+        ew = ev.points / ev.points.sum()
+        ev_all = {"clf": (ev.clf_top1 * ew).sum(), "hmm": (ev.hmm_top1 * ew).sum(),
+                  "cont": (ev.hmm_continuity * ew).sum(), "f1": ev.route_f1.mean()}
+        s.append(f"""
+<h2>8. Results on the evaluator-test trips</h2>
+<p>These numbers were computed <b>once, through the API, after every modelling choice was frozen</b>: model, features,
+hyperparameters and decoder settings are the ones described above, and the code on GitHub was committed before the
+evaluator data was received. No result in this section was used to select or tune anything. <code>scripts/09_evaluator_results.py</code>
+calls the same <code>/trips</code> and <code>/predict</code> endpoints as the evaluator UI and writes
+<code>results/evaluator_test_results.csv</code>.</p>
+{table(ev, ['trip_id', 'points', 'clf_top1', 'hmm_top1', 'hmm_continuity', 'route_precision', 'route_recall', 'route_f1', 'breaks'],
+       ['Trip', 'Points', 'Top-1 classifier', 'Top-1 HMM', 'Continuity HMM', 'Route precision', 'Route recall', 'Route F1', 'Breaks'],
+       {c: f4 for c in ['clf_top1', 'hmm_top1', 'hmm_continuity', 'route_precision', 'route_recall', 'route_f1']})}
+<p class="cap">Table 8.1: Evaluator-test trips (results/evaluator_test_results.csv).</p>
+<table><thead><tr><th></th><th>Student test (10 trips)</th><th>Evaluator test (10 trips)</th></tr></thead><tbody>
+<tr><td>Top-1, classifier only</td><td>{pct(hb.clf_top1)}</td><td>{pct(ev_all['clf'])}</td></tr>
+<tr><td>Top-1, classifier + HMM</td><td>{pct(hb.hmm_top1)}</td><td>{pct(ev_all['hmm'])}</td></tr>
+<tr><td>Route continuity</td><td>{pct(hb.hmm_continuity)}</td><td>{pct(ev_all['cont'])}</td></tr>
+<tr><td>Route F1 (mean over trips)</td><td>{pct(hb.hmm_route_f1)}</td><td>{pct(ev_all['f1'])}</td></tr>
+</tbody></table>
+<p class="cap">Table 8.2: Student test against evaluator test (point-weighted Top-1 and continuity).</p>
+<p>The evaluator results are in line with the student-test results: point accuracy {pct(ev_all['hmm'])} against {pct(hb.hmm_top1)},
+route F1 {pct(ev_all['f1'])} against {pct(hb.hmm_route_f1)}. The HMM improved every evaluator trip, by
+{100 * (ev.hmm_top1 - ev.clf_top1).min():.1f} to {100 * (ev.hmm_top1 - ev.clf_top1).max():.1f} percentage points, and there were no
+decoder breaks. The weakest trips are 00000030 (Top-1 {f4(ev.set_index('trip_id').loc['00000030'].hmm_top1)}) and 00000015, whose route
+recall is {f4(ev.set_index('trip_id').loc['00000015'].route_recall)} but route precision only
+{f4(ev.set_index('trip_id').loc['00000015'].route_precision)}: the reconstructed route covers the reference almost completely but
+includes some extra road. We did not analyse these trips further, because doing so would amount to developing on the evaluator data.</p>
+""")
+
     s.append(f"""
-<h2>8. Conclusions and limitations</h2>
+<h2>{'9' if ev_path.exists() else '8'}. Conclusions and limitations</h2>
 <ul>
 <li>Relative-distance and heading features turn a 52% nearest-arc baseline into 88% point accuracy with LightGBM. The HMM, which adds road
 connectivity and travel-distance consistency, brings it to {pct(hb.hmm_top1)} and makes the route almost fully connected (route F1 {pct(hb.hmm_route_f1)}).</li>
